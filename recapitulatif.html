@@ -93,7 +93,7 @@
             margin-top: 26px;
             padding: 20px;
             display: grid;
-            grid-template-columns: repeat(3, minmax(0, 1fr));
+            grid-template-columns: repeat(2, minmax(0, 1fr));
             gap: 12px;
             border: 1px solid #26374a;
             border-radius: 14px;
@@ -102,6 +102,8 @@
         .totals small { display: block; color: #94a3b8; font-size: .78rem; }
         .totals strong { display: block; margin-top: 2px; font-size: 1.15rem; }
         .totals .advance small, .totals .advance strong { color: #f59e0b; }
+        .totals .due-now small, .totals .due-now strong { color: #5eead4; }
+        .totals .fee small, .totals .fee strong { color: #fbbf24; }
         .validity { margin: 14px 0 0; color: #94a3b8; font-size: .82rem; }
         .validity.expired { color: #f87171; font-weight: 700; }
         .actions { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 26px; }
@@ -205,7 +207,9 @@
             <div class="totals" aria-live="polite">
                 <div><small>Prix total</small><strong id="out-total">0 Ar</strong></div>
                 <div class="advance"><small>Avance 50 %</small><strong id="out-advance">0 Ar</strong></div>
-                <div><small>Reste à payer</small><strong id="out-rest">0 Ar</strong></div>
+                <div class="fee"><small>Frais de retrait Orange Money</small><strong id="out-fee">0 Ar</strong></div>
+                <div class="due-now"><small>Total à payer maintenant</small><strong id="out-due-now">0 Ar</strong></div>
+                <div><small>Reste à payer après l’avance</small><strong id="out-rest">0 Ar</strong></div>
             </div>
             <p class="validity" id="validity"></p>
 
@@ -220,6 +224,7 @@
         const params = new URLSearchParams(window.location.search);
         const VALIDITY_DAYS = 3;
         const created = Number(params.get('created')) || Date.now();
+        const clientView = params.get('view') === 'client';
 
         const textFields = {
             ref: 'ref', link: 'model-link', name: 'name', phone: 'phone', email: 'email',
@@ -235,7 +240,6 @@
         if (!$('ref').value) $('ref').value = newReference();
         if (!$('fb').value) $('fb').value = 'Non renseigné';
 
-        // Nom du modèle déduit du lien MakerWorld (ex. .../models/3341764-furia-rossa-ams-display)
         if (!$('model-name').value) {
             const match = $('model-link').value.match(/\/models\/\d+-([^/?#]+)/);
             if (match) {
@@ -250,11 +254,24 @@
 
         const formatAr = (n) => `${Math.round(n).toLocaleString('fr-FR')} Ar`;
 
+        function withdrawalFee(amount) {
+            if (amount <= 1000) return 0;
+            if (amount <= 5000) return 200;
+            if (amount <= 10000) return 350;
+            if (amount <= 25000) return 700;
+            if (amount <= 100000) return 2000;
+            if (amount <= 500000) return 5000;
+            return 9500;
+        }
+
         function updateTotals() {
             const total = Math.max(0, Number($('total').value) || 0);
             const advance = Math.round(total / 2);
+            const fee = withdrawalFee(advance);
             $('out-total').textContent = formatAr(total);
             $('out-advance').textContent = formatAr(advance);
+            $('out-fee').textContent = formatAr(fee);
+            $('out-due-now').textContent = formatAr(advance + fee);
             $('out-rest').textContent = formatAr(total - advance);
         }
 
@@ -272,7 +289,7 @@
         }
 
         function buildLink() {
-            const p = new URLSearchParams({ created: String(created) });
+            const p = new URLSearchParams({ created: String(created), view: 'client' });
             for (const [key, id] of Object.entries(textFields)) {
                 if ($(id).value) p.set(key, $(id).value);
             }
@@ -286,14 +303,26 @@
         $('print').addEventListener('click', () => window.print());
         $('copy-link').addEventListener('click', async () => {
             const button = $('copy-link');
+            const link = buildLink();
             try {
-                await navigator.clipboard.writeText(buildLink());
-                button.textContent = 'Lien copié ✓';
+                await navigator.clipboard.writeText(link);
+                button.textContent = 'Lien client copié ✓';
             } catch {
-                window.prompt('Copiez ce lien :', buildLink());
+                window.prompt('Copiez ce lien client :', link);
             }
             setTimeout(() => { button.textContent = 'Copier le lien du devis'; }, 2000);
         });
+
+        if (clientView) {
+            document.querySelectorAll('input').forEach((input) => {
+                input.readOnly = true;
+                input.setAttribute('aria-readonly', 'true');
+            });
+            $('new-ref').hidden = true;
+            $('copy-link').hidden = true;
+            document.querySelector('h1').textContent = 'Votre devis MadaRC3D';
+            document.querySelector('.eyebrow').textContent = 'Devis client';
+        }
 
         updateTotals();
         updateValidity();
