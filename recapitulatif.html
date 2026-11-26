@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#0b0f19">
+    <title>Devis — MadaRC3D</title>
+    <style>
+        *, *::before, *::after { box-sizing: border-box; }
+        body {
+            min-height: 100vh;
+            margin: 0;
+            padding: 24px;
+            display: grid;
+            place-items: start center;
+            background:
+                radial-gradient(ellipse 600px 500px at 20% 10%, rgba(13,148,136,.12), transparent),
+                #0b0f19;
+            color: #e2e8f0;
+            font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
+            line-height: 1.6;
+        }
+        .page { width: min(100%, 640px); }
+        .brand {
+            display: inline-block;
+            margin-bottom: 24px;
+            color: #0d9488;
+            font-size: 1.35rem;
+            font-weight: 800;
+            text-decoration: none;
+        }
+        .brand span { color: #f59e0b; }
+        .card {
+            padding: clamp(24px, 6vw, 42px);
+            border: 1px solid #1e293b;
+            border-radius: 16px;
+            background: #131a2b;
+            box-shadow: 0 4px 24px rgba(0,0,0,.35);
+        }
+        .eyebrow {
+            margin: 0 0 8px;
+            color: #0d9488;
+            font-size: .78rem;
+            font-weight: 700;
+            letter-spacing: .08em;
+            text-transform: uppercase;
+        }
+        h1 { margin: 0 0 24px; font-size: clamp(1.6rem, 5vw, 2.1rem); line-height: 1.2; }
+        h2 { margin: 30px 0 16px; font-size: 1.05rem; }
+        .grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+        .full { grid-column: 1 / -1; }
+        label { display: block; margin-bottom: 6px; font-size: .85rem; font-weight: 700; color: #cbd5e1; }
+        input {
+            width: 100%;
+            min-height: 48px;
+            padding: 12px 14px;
+            border: 1px solid #334155;
+            border-radius: 10px;
+            outline: none;
+            background: #0b0f19;
+            color: #e2e8f0;
+            font: inherit;
+        }
+        input::placeholder { color: #64748b; }
+        input:focus { border-color: #0d9488; box-shadow: 0 0 0 3px rgba(13,148,136,.2); }
+        input[readonly] { color: #94a3b8; cursor: default; }
+        .ref-row { display: flex; gap: 10px; }
+        .ref-row input { font-family: ui-monospace, Consolas, monospace; font-weight: 700; color: #5eead4; }
+        .icon-btn {
+            flex: 0 0 48px;
+            border: 1px solid #334155;
+            border-radius: 10px;
+            background: #0b0f19;
+            color: #94a3b8;
+            font-size: 1.1rem;
+            cursor: pointer;
+        }
+        .icon-btn:hover { color: #5eead4; border-color: #0d9488; }
+        .info-box {
+            margin-top: 18px;
+            padding: 18px 20px;
+            border: 1px solid #26374a;
+            border-radius: 14px;
+            background: #172235;
+            font-size: .9rem;
+            color: #aab7c9;
+        }
+        .info-box h3 { margin: 0 0 8px; font-size: .95rem; color: #e2e8f0; }
+        .info-box ul { margin: 0; padding-left: 18px; }
+        .info-box li + li { margin-top: 6px; }
+        .info-box a { color: #5eead4; }
+        .totals {
+            margin-top: 26px;
+            padding: 20px;
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 12px;
+            border: 1px solid #26374a;
+            border-radius: 14px;
+            background: #0f1626;
+        }
+        .totals small { display: block; color: #94a3b8; font-size: .78rem; }
+        .totals strong { display: block; margin-top: 2px; font-size: 1.15rem; }
+        .totals .advance small, .totals .advance strong { color: #f59e0b; }
+        .validity { margin: 14px 0 0; color: #94a3b8; font-size: .82rem; }
+        .validity.expired { color: #f87171; font-weight: 700; }
+        .actions { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 26px; }
+        .btn {
+            flex: 1 1 200px;
+            min-height: 50px;
+            padding: 12px 18px;
+            border: 0;
+            border-radius: 10px;
+            background: #0d9488;
+            color: #fff;
+            font: inherit;
+            font-weight: 700;
+            cursor: pointer;
+        }
+        .btn:hover { background: #0a7a70; }
+        .btn.secondary { background: #1e293b; }
+        .btn.secondary:hover { background: #26354d; }
+        @media (max-width: 540px) {
+            .grid { grid-template-columns: 1fr; }
+            .full { grid-column: auto; }
+            .totals { grid-template-columns: 1fr; }
+        }
+        @media print {
+            body { background: #fff; color: #000; padding: 0; }
+            .card, .info-box, .totals { background: #fff; border-color: #999; box-shadow: none; }
+            input { background: #fff; color: #000; border-color: #999; }
+            .actions, .icon-btn { display: none; }
+        }
+    </style>
+</head>
+<body>
+    <main class="page">
+        <a class="brand" href="madarc3d-homepage_1795593041258.html">Mada<span>RC3D</span></a>
+        <div class="card">
+            <p class="eyebrow">Devis</p>
+            <h1>Récapitulatif de la commande</h1>
+
+            <h2 style="margin-top:0">1. Référence &amp; Récapitulatif vérifié</h2>
+            <div class="grid">
+                <div class="full">
+                    <label for="ref">Référence de commande</label>
+                    <div class="ref-row">
+                        <input id="ref" type="text">
+                        <button class="icon-btn" id="new-ref" type="button" title="Générer une nouvelle référence" aria-label="Générer une nouvelle référence">⟳</button>
+                    </div>
+                </div>
+                <div class="full">
+                    <label for="model-name">Nom du modèle (facultatif)</label>
+                    <input id="model-name" type="text">
+                </div>
+                <div class="full">
+                    <label for="model-link">Lien du modèle MakerWorld</label>
+                    <input id="model-link" type="text">
+                </div>
+                <div><label for="name">Nom du client</label><input id="name" type="text"></div>
+                <div><label for="phone">Téléphone client</label><input id="phone" type="text"></div>
+                <div><label for="email">E-mail client</label><input id="email" type="text"></div>
+                <div><label for="fb">Facebook (facultatif)</label><input id="fb" type="text"></div>
+                <div><label for="qty">Quantité</label><input id="qty" type="text"></div>
+                <div><label for="material">Matériau vérifié</label><input id="material" type="text"></div>
+                <div><label for="color">Couleur(s) confirmée(s)</label><input id="color" type="text"></div>
+                <div><label for="quality">Qualité d’impression</label><input id="quality" type="text"></div>
+                <div><label for="size">Taille / Échelle</label><input id="size" type="text"></div>
+                <div><label for="city">Ville de livraison</label><input id="city" type="text"></div>
+                <div class="full">
+                    <label for="date">Date souhaitée par le client (facultatif)</label>
+                    <input id="date" type="date">
+                </div>
+            </div>
+
+            <h2>2. Durée, Prix total, Avance 50 % &amp; Orange Money</h2>
+            <div class="grid">
+                <div>
+                    <label for="print-time">Temps d’impression estimé</label>
+                    <input id="print-time" type="text" placeholder="Ex. 6 h 45 min">
+                </div>
+                <div>
+                    <label for="total">Montant total (Ariary)</label>
+                    <input id="total" type="number" min="0" step="100" inputmode="numeric" placeholder="Ex. 48000">
+                </div>
+                <div>
+                    <label for="om-number">Numéro Orange Money</label>
+                    <input id="om-number" type="text" value="037 72 163 40" readonly>
+                </div>
+                <div>
+                    <label for="om-holder">Titulaire Orange Money</label>
+                    <input id="om-holder" type="text" value="TOHERE TANTEHE" readonly>
+                </div>
+            </div>
+
+            <div class="info-box">
+                <h3>Modalités de livraison</h3>
+                <ul>
+                    <li>Retrait à l’atelier.</li>
+                    <li>Livraison à domicile possible : frais de 6 000 Ar (en supplément).</li>
+                    <li>Plus d’informations : <a href="tel:+261377216340">+261377216340</a> ou <a href="mailto:sandyherintsoa@gmail.com">sandyherintsoa@gmail.com</a>.</li>
+                </ul>
+            </div>
+
+            <div class="totals" aria-live="polite">
+                <div><small>Prix total</small><strong id="out-total">0 Ar</strong></div>
+                <div class="advance"><small>Avance 50 %</small><strong id="out-advance">0 Ar</strong></div>
+                <div><small>Reste à payer</small><strong id="out-rest">0 Ar</strong></div>
+            </div>
+            <p class="validity" id="validity"></p>
+
+            <div class="actions">
+                <button class="btn" id="copy-link" type="button">Copier le lien du devis</button>
+                <button class="btn secondary" id="print" type="button">Imprimer / PDF</button>
+            </div>
+        </div>
+    </main>
+    <script>
+        const $ = (id) => document.getElementById(id);
+        const params = new URLSearchParams(window.location.search);
+        const VALIDITY_DAYS = 3;
+        const created = Number(params.get('created')) || Date.now();
+
+        const textFields = {
+            ref: 'ref', link: 'model-link', name: 'name', phone: 'phone', email: 'email',
+            fb: 'fb', qty: 'qty', material: 'material', color: 'color', size: 'size',
+            quality: 'quality', city: 'city', date: 'date', model: 'model-name',
+            time: 'print-time', total: 'total'
+        };
+
+        for (const [key, id] of Object.entries(textFields)) {
+            const value = params.get(key);
+            if (value !== null) $(id).value = value;
+        }
+        if (!$('ref').value) $('ref').value = newReference();
+        if (!$('fb').value) $('fb').value = 'Non renseigné';
+
+        // Nom du modèle déduit du lien MakerWorld (ex. .../models/3341764-furia-rossa-ams-display)
+        if (!$('model-name').value) {
+            const match = $('model-link').value.match(/\/models\/\d+-([^/?#]+)/);
+            if (match) {
+                $('model-name').value = match[1].split('-').filter(Boolean)
+                    .map((w) => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+            }
+        }
+
+        function newReference() {
+            return `MRC-${new Date().getFullYear()}-${Math.floor(1000 + Math.random() * 9000)}`;
+        }
+
+        const formatAr = (n) => `${Math.round(n).toLocaleString('fr-FR')} Ar`;
+
+        function updateTotals() {
+            const total = Math.max(0, Number($('total').value) || 0);
+            const advance = Math.round(total / 2);
+            $('out-total').textContent = formatAr(total);
+            $('out-advance').textContent = formatAr(advance);
+            $('out-rest').textContent = formatAr(total - advance);
+        }
+
+        function updateValidity() {
+            const until = new Date(created + VALIDITY_DAYS * 24 * 3600 * 1000);
+            const label = new Intl.DateTimeFormat('fr-FR', { dateStyle: 'long', timeStyle: 'short' }).format(until);
+            const box = $('validity');
+            if (Date.now() > until.getTime()) {
+                box.classList.add('expired');
+                box.textContent = `Ce devis a expiré le ${label}. Contactez-nous pour le renouveler.`;
+            } else {
+                box.classList.remove('expired');
+                box.textContent = `Validité automatique : ${VALIDITY_DAYS} jours (jusqu’au ${label}).`;
+            }
+        }
+
+        function buildLink() {
+            const p = new URLSearchParams({ created: String(created) });
+            for (const [key, id] of Object.entries(textFields)) {
+                if ($(id).value) p.set(key, $(id).value);
+            }
+            const url = new URL(window.location.href);
+            url.search = p.toString();
+            return url.href;
+        }
+
+        $('total').addEventListener('input', updateTotals);
+        $('new-ref').addEventListener('click', () => { $('ref').value = newReference(); });
+        $('print').addEventListener('click', () => window.print());
+        $('copy-link').addEventListener('click', async () => {
+            const button = $('copy-link');
+            try {
+                await navigator.clipboard.writeText(buildLink());
+                button.textContent = 'Lien copié ✓';
+            } catch {
+                window.prompt('Copiez ce lien :', buildLink());
+            }
+            setTimeout(() => { button.textContent = 'Copier le lien du devis'; }, 2000);
+        });
+
+        updateTotals();
+        updateValidity();
+    </script>
+</body>
+</html>

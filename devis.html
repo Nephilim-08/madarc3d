@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#0b0f19">
+    <title>Demander un devis — MadaRC3D</title>
+    <style>
+        *, *::before, *::after { box-sizing: border-box; }
+        body {
+            min-height: 100vh;
+            margin: 0;
+            padding: 24px;
+            display: grid;
+            place-items: center;
+            background:
+                radial-gradient(ellipse 600px 500px at 20% 10%, rgba(13,148,136,.12), transparent),
+                #0b0f19;
+            color: #e2e8f0;
+            font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
+            line-height: 1.6;
+        }
+        .page { width: min(100%, 640px); }
+        .brand {
+            display: inline-block;
+            margin-bottom: 24px;
+            color: #0d9488;
+            font-size: 1.35rem;
+            font-weight: 800;
+            text-decoration: none;
+        }
+        .brand span { color: #f59e0b; }
+        .card {
+            padding: clamp(24px, 6vw, 42px);
+            border: 1px solid #1e293b;
+            border-radius: 16px;
+            background: #131a2b;
+            box-shadow: 0 4px 24px rgba(0,0,0,.35);
+        }
+        .eyebrow {
+            margin: 0 0 8px;
+            color: #0d9488;
+            font-size: .78rem;
+            font-weight: 700;
+            letter-spacing: .08em;
+            text-transform: uppercase;
+        }
+        h1 {
+            margin: 0 0 10px;
+            font-size: clamp(1.7rem, 5vw, 2.3rem);
+            line-height: 1.2;
+        }
+        .intro {
+            margin: 0 0 28px;
+            color: #94a3b8;
+        }
+        .contact-heading {
+            margin: 28px 0 6px;
+            font-size: 1.05rem;
+        }
+        .contact-intro {
+            margin: 0 0 18px;
+            color: #94a3b8;
+            font-size: .88rem;
+        }
+        .contact-fields {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 16px;
+        }
+        .field.full-width { grid-column: 1 / -1; }
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 700;
+        }
+        .field label { font-size: .9rem; }
+        input, select, textarea {
+            width: 100%;
+            min-height: 54px;
+            padding: 14px 16px;
+            border: 1px solid #334155;
+            border-radius: 10px;
+            outline: none;
+            background: #0b0f19;
+            color: #e2e8f0;
+            font: inherit;
+        }
+        textarea {
+            min-height: 92px;
+            resize: vertical;
+        }
+        input::placeholder, textarea::placeholder { color: #64748b; }
+        input:focus, select:focus, textarea:focus {
+            border-color: #0d9488;
+            box-shadow: 0 0 0 3px rgba(13,148,136,.2);
+        }
+        select option { background: #0b0f19; color: #e2e8f0; }
+        .send-button {
+            width: 100%;
+            min-height: 52px;
+            margin-top: 22px;
+            padding: 12px 18px;
+            border: 0;
+            border-radius: 10px;
+            background: #0d9488;
+            color: #fff;
+            font: inherit;
+            font-weight: 700;
+            cursor: pointer;
+            transition: background .2s, transform .2s;
+        }
+        .send-button:hover {
+            background: #0a7a70;
+            transform: translateY(-1px);
+        }
+        .send-note {
+            margin: 10px 0 0;
+            color: #94a3b8;
+            font-size: .8rem;
+            text-align: center;
+        }
+        .print-info {
+            margin-top: 28px;
+            padding: 20px;
+            border: 1px solid #26374a;
+            border-radius: 14px;
+            background: #172235;
+        }
+        .print-info-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 20px;
+        }
+        .info-part + .info-part {
+            padding-left: 20px;
+            border-left: 1px solid #334155;
+        }
+        .info-title {
+            display: flex;
+            align-items: center;
+            gap: 9px;
+            margin: 0 0 12px;
+            color: #e2e8f0;
+            font-size: .98rem;
+        }
+        .info-icon {
+            display: grid;
+            width: 30px;
+            height: 30px;
+            flex: 0 0 30px;
+            place-items: center;
+            border-radius: 9px;
+            background: rgba(13,148,136,.16);
+            color: #5eead4;
+            font-size: 1rem;
+        }
+        .info-list {
+            display: grid;
+            gap: 9px;
+            margin: 0;
+            padding: 0;
+            color: #aab7c9;
+            font-size: .82rem;
+            list-style: none;
+        }
+        .info-list li {
+            position: relative;
+            padding-left: 17px;
+        }
+        .info-list li::before {
+            position: absolute;
+            left: 0;
+            color: #5eead4;
+            content: "•";
+        }
+        .info-note {
+            margin: 12px 0 0;
+            color: #94a3b8;
+            font-size: .78rem;
+        }
+        @media (max-width: 540px) {
+            .contact-fields { grid-template-columns: 1fr; }
+            .field.full-width { grid-column: auto; }
+            .print-info-grid { grid-template-columns: 1fr; }
+            .info-part + .info-part {
+                padding-top: 18px;
+                padding-left: 0;
+                border-top: 1px solid #334155;
+                border-left: 0;
+            }
+        }
+        .hint {
+            margin: 10px 0 0;
+            color: #94a3b8;
+            font-size: .85rem;
+        }
+        .back {
+            display: inline-block;
+            margin-top: 22px;
+            color: #5eead4;
+            font-size: .9rem;
+            text-decoration: none;
+        }
+        .back:hover { text-decoration: underline; }
+    </style>
+</head>
+<body>
+    <main class="page">
+        <a class="brand" href="madarc3d-homepage_1795593041258.html">Mada<span>RC3D</span></a>
+        <form
+            class="card"
+            id="quote-form"
+            action="https://formspree.io/f/xjywlyvj"
+            method="POST"
+            aria-labelledby="page-title"
+        >
+            <input type="hidden" id="mail-subject" name="subject" value="Demande de devis MadaRC3D">
+            <input type="hidden" id="order-reference" name="reference" value="">
+            <textarea id="formatted-message" name="message" hidden></textarea>
+            <p class="eyebrow">Demande de devis</p>
+            <h1 id="page-title">Un modèle repéré sur MakerWorld ?</h1>
+            <p class="intro">Collez le lien de la page du modèle dans le champ ci-dessous pour préparer votre demande de devis.</p>
+            <label for="makerworld-link">Lien du modèle MakerWorld</label>
+            <input
+                id="makerworld-link"
+                name="makerworld-link"
+                type="url"
+                inputmode="url"
+                autocomplete="url"
+                placeholder="https://makerworld.com/fr/3d-models/..."
+                aria-describedby="link-hint"
+                required
+            >
+            <p class="hint" id="link-hint">Copiez l’adresse de la page du modèle sur MakerWorld, puis collez-la ici.</p>
+            <h2 class="contact-heading">Coordonnées du client</h2>
+            <p class="contact-intro">Indiquez comment vous contacter au sujet de ce devis.</p>
+            <div class="contact-fields">
+                <div class="field">
+                    <label for="client-name">Nom complet</label>
+                    <input id="client-name" name="name" type="text" autocomplete="name" required>
+                </div>
+                <div class="field">
+                    <label for="client-phone">Numéro de téléphone</label>
+                    <input id="client-phone" name="phone" type="tel" inputmode="tel" autocomplete="tel" placeholder="+ indicatif pays et numéro" required>
+                </div>
+                <div class="field full-width">
+                    <label for="client-email">Adresse e-mail</label>
+                    <input id="client-email" name="email" type="email" autocomplete="email" required>
+                </div>
+                <div class="field full-width">
+                    <label for="facebook-name">Nom sur Facebook (facultatif)</label>
+                    <input id="facebook-name" name="facebook-name" type="text" autocomplete="nickname" placeholder="Nom du profil Facebook">
+                </div>
+            </div>
+            <h2 class="contact-heading">Informations pour le devis</h2>
+            <p class="contact-intro">Précisez les options souhaitées pour l’impression.</p>
+            <div class="contact-fields">
+                <div class="field">
+                    <label for="quantity">Quantité</label>
+                    <input id="quantity" name="quantity" type="number" min="1" step="1" value="1" required>
+                </div>
+                <div class="field">
+                    <label for="material">Matériau souhaité</label>
+                    <select id="material" name="material" required>
+                        <option value="">Choisir un matériau</option>
+                        <option value="PLA">PLA</option>
+                        <option value="PETG">PETG</option>
+                        <option value="ABS">ABS</option>
+                        <option value="TPU">TPU</option>
+                        <option value="Autre / à préciser">Autre / à préciser</option>
+                        <option value="Conseil de l’équipe">Conseil de l’équipe</option>
+                    </select>
+                </div>
+                <div class="field">
+                    <label for="color">Couleur(s)</label>
+                    <input id="color" name="color" type="text" placeholder="Ex. noir et rouge" required>
+                </div>
+                <div class="field">
+                    <label for="size">Taille</label>
+                    <input id="size" name="size" type="text" value="À l’échelle d’origine du modèle" required>
+                </div>
+                <div class="field">
+                    <label for="print-quality">Qualité d’impression</label>
+                    <select id="print-quality" name="print-quality" required>
+                        <option value="Basse — 0,24 mm">Basse — 0,24 mm</option>
+                        <option value="Moyenne — 0,20 mm" selected>Moyenne — 0,20 mm</option>
+                        <option value="Haute — 0,16 mm">Haute — 0,16 mm</option>
+                    </select>
+                </div>
+                <div class="field">
+                    <label for="delivery-city">Lieu de livraison</label>
+                    <input id="delivery-city" name="delivery-city" type="text" autocomplete="address-level2" placeholder="Ville" required>
+                </div>
+                <div class="field full-width">
+                    <label for="desired-date">Date souhaitée (facultatif)</label>
+                    <input id="desired-date" name="desired-date" type="date">
+                </div>
+            </div>
+            <section class="print-info" aria-label="Informations sur les paramètres d’impression">
+                <div class="print-info-grid">
+                    <div class="info-part">
+                        <h2 class="info-title"><span class="info-icon" aria-hidden="true">⚙</span>Réglages standards</h2>
+                        <ul class="info-list">
+                            <li>Remplissage : 15 %.</li>
+                            <li>Nombre de parois : 2.</li>
+                            <li>Supports normaux, générés automatiquement selon la géométrie du modèle.</li>
+                            <li>Bordure (Brim) intérieure et extérieure : 7 mm, sans écart par rapport à l’objet.</li>
+                        </ul>
+                        <p class="info-note">Ces réglages conviennent aux impressions courantes. Une pièce mécanique ou soumise à des efforts peut nécessiter des réglages spécifiques.</p>
+                    </div>
+                    <div class="info-part">
+                        <h2 class="info-title"><span class="info-icon" aria-hidden="true">ⓘ</span>Facteurs qui influencent le prix</h2>
+                        <ul class="info-list">
+                            <li>Les couleurs supplémentaires peuvent augmenter les changements de filament, le temps et le coût.</li>
+                            <li>Une couche plus fine améliore généralement les détails, mais augmente le temps d’impression.</li>
+                            <li>La taille, les supports, les détails fins et les formes complexes influencent la consommation et le temps de préparation.</li>
+                            <li>La qualité du fichier 3D, l’échelle choisie et la disponibilité des couleurs peuvent aussi modifier le résultat.</li>
+                        </ul>
+                        <p class="info-note">Le prix et le délai définitifs seront confirmés après vérification du modèle et des paramètres. Un fichier présentant des défauts peut nécessiter des corrections.</p>
+                    </div>
+                </div>
+            </section>
+            <button class="send-button" type="submit">Envoyer la demande de devis</button>
+            <p class="send-note">Le courriel contient le récapitulatif de votre demande et vos coordonnées.</p>
+        </form>
+        <a class="back" href="madarc3d-homepage_1795593041258.html">← Retour à l’accueil</a>
+    </main>
+    <script>
+        const quoteForm = document.getElementById('quote-form');
+        const modelLink = document.getElementById('makerworld-link');
+        const formattedMessage = document.getElementById('formatted-message');
+
+        modelLink.addEventListener('input', () => modelLink.setCustomValidity(''));
+
+        quoteForm.addEventListener('submit', (event) => {
+            const modelUrl = new URL(modelLink.value);
+            const validMakerWorldHost =
+                modelUrl.hostname === 'makerworld.com' ||
+                modelUrl.hostname.endsWith('.makerworld.com');
+
+            if (!validMakerWorldHost) {
+                event.preventDefault();
+                modelLink.setCustomValidity('Collez un lien provenant de makerworld.com.');
+                modelLink.reportValidity();
+                return;
+            }
+
+            if (quoteForm.action.includes('FORM_ID_A_REMPLACER')) {
+                event.preventDefault();
+                alert('Le formulaire doit d’abord être relié à ton URL Formspree.');
+                return;
+            }
+
+            // Référence de commande + lien de la page de devis générée automatiquement
+            const reference = `MRC-${new Date().getFullYear()}-${Math.floor(1000 + Math.random() * 9000)}`;
+            const field = (id) => document.getElementById(id).value.trim();
+            const params = new URLSearchParams({
+                ref: reference,
+                created: String(Date.now()),
+                link: modelLink.value.trim(),
+                name: field('client-name'),
+                phone: field('client-phone'),
+                email: field('client-email'),
+                fb: field('facebook-name'),
+                qty: field('quantity'),
+                material: field('material'),
+                color: field('color'),
+                size: field('size'),
+                quality: field('print-quality'),
+                city: field('delivery-city'),
+                date: field('desired-date')
+            });
+            const quotePageUrl = new URL('recapitulatif.html', window.location.href);
+            quotePageUrl.search = params.toString();
+            document.getElementById('order-reference').value = reference;
+            document.getElementById('mail-subject').value = `Demande de devis ${reference} — ${field('client-name')}`;
+
+            const clientName = document.getElementById('client-name').value.trim();
+            const clientPhone = document.getElementById('client-phone').value.trim();
+            const clientEmail = document.getElementById('client-email').value.trim();
+            const facebookName = document.getElementById('facebook-name').value.trim() || 'Non renseigné';
+            const desiredDateValue = document.getElementById('desired-date').value;
+            const desiredDate = desiredDateValue
+                ? new Intl.DateTimeFormat('fr-FR', { dateStyle: 'long' }).format(new Date(`${desiredDateValue}T12:00:00`))
+                : 'À préciser';
+
+            formattedMessage.value = [
+                'Bonjour,',
+                '',
+                'Je souhaiterais obtenir un devis pour l’impression 3D de l’objet suivant :',
+                modelLink.value.trim(),
+                '',
+                'Voici les informations pour établir le devis :',
+                `- Quantité : ${document.getElementById('quantity').value}`,
+                `- Matériau souhaité : ${document.getElementById('material').value}`,
+                `- Couleur(s) : ${document.getElementById('color').value.trim()}`,
+                `- Taille : ${document.getElementById('size').value.trim()}`,
+                `- Qualité d’impression : ${document.getElementById('print-quality').value}`,
+                `- Lieu de livraison : ${document.getElementById('delivery-city').value.trim()}`,
+                `- Date souhaitée : ${desiredDate}`,
+                '',
+                'Pourriez-vous m’indiquer le prix, le délai de réalisation et les modalités de paiement et de livraison ?',
+                '',
+                'N’hésitez pas à me contacter si vous avez besoin d’informations complémentaires.',
+                '',
+                'Cordialement,',
+                clientName,
+                clientPhone,
+                clientEmail,
+                `Nom sur Facebook : ${facebookName}`,
+                '',
+                '------------------------------',
+                `Référence de commande : ${reference}`,
+                'Page de devis à compléter (récapitulatif, durée, prix, avance 50 %) :',
+                quotePageUrl.href
+            ].join('\n');
+        });
+    </script>
+</body>
+</html>
