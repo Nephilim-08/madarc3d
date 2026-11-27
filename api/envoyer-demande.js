@@ -55,6 +55,15 @@ export default async function handler(req, res) {
       html,
     }),
   });
-  if (!r.ok) return res.status(502).json({ error: 'L’e-mail n’a pas pu être envoyé.' });
+ const resendResult = await r.json().catch(() => ({}));
+
+if (!r.ok) {
+  console.error('Erreur Resend:', resendResult);
+  return res.status(502).json({
+    error: 'Échec Resend. Consultez les logs Vercel.'
+  });
+}
+
+console.log('E-mail envoyé:', resendResult);
   return res.status(200).json({ ok: true });
 }
