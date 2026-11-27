@@ -427,6 +427,21 @@
             color: var(--text);
         }
 
+        /* ===== MULTI-FILE LIST ===== */
+        .file-list { list-style: none; max-height: 260px; overflow-y: auto; margin-bottom: 18px; }
+        .file-list li { display: flex; align-items: center; gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--border); font-size: .85rem; }
+        .file-list .fname { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 600; }
+        .file-list .fsize { color: var(--text-muted); font-size: .78rem; white-space: nowrap; }
+        .file-list .fremove { width: 30px; height: 30px; border-radius: 8px; border: 1px solid var(--border); background: none; color: var(--text-muted); cursor: pointer; }
+        .file-list .fremove:hover { border-color: #ef4444; color: #fca5a5; }
+        .quota-bar { height: 8px; border-radius: 999px; background: var(--bg-surface); overflow: hidden; }
+        .quota-bar span { display: block; height: 100%; width: 0; background: var(--brand); transition: width .3s; }
+        .quota-text { margin-top: 8px; font-size: .78rem; color: var(--text-muted); }
+        .hp { position: absolute; left: -9999px; height: 0; overflow: hidden; }
+        .details-actions { gap: 14px; }
+        .details-status-error { color: #fca5a5; }
+        #btn-send:disabled { opacity: .6; cursor: wait; }
+
         /* ===== ERROR STATE ===== */
         .error-toast {
             max-width: 560px;
@@ -521,7 +536,7 @@
     <div class="container">
         <div class="step-indicator reveal" id="step-indicator">Étape 1 / 4</div>
         <h1 class="reveal" id="page-title">Déposer votre <span class="brand">modèle 3D</span></h1>
-        <p class="sub reveal" id="page-subtitle">Sélectionnez votre fichier STL, OBJ ou 3MF depuis votre appareil.</p>
+        <p class="sub reveal" id="page-subtitle">Sélectionnez vos fichiers STL, OBJ ou 3MF depuis votre appareil.</p>
     </div>
 </section>
 
@@ -533,53 +548,38 @@
             <!-- Drop zone -->
             <div class="drop-zone reveal" id="drop-zone">
                 <span class="drop-zone-icon">📁</span>
-                <div class="drop-zone-title">Glissez-déposez votre fichier ici</div>
-                <div class="drop-zone-hint">ou sélectionnez un fichier depuis votre appareil</div>
+                <div class="drop-zone-title">Glissez-déposez vos fichiers ici</div>
+                <div class="drop-zone-hint">ou sélectionnez-les depuis votre appareil (100 Mo maximum au total)</div>
                 <button class="drop-zone-btn" id="browse-btn" type="button">Parcourir les fichiers</button>
                 <div class="drop-zone-formats">
                     <span class="format-tag">STL</span>
                     <span class="format-tag">OBJ</span>
                     <span class="format-tag">3MF</span>
                 </div>
-                <input type="file" id="file-input" accept=".stl,.obj,.3mf, model/stl, model/obj, model/3mf">
+                <input type="file" id="file-input" multiple accept=".stl,.obj,.3mf, model/stl, model/obj, model/3mf">
             </div>
 
             <!-- Error toast -->
             <div class="error-toast" id="error-toast">
                 <span class="error-icon">⚠️</span>
-                <span id="error-msg">Format non supporté. Veuillez sélectionner un fichier STL, OBJ ou 3MF.</span>
+                <span id="error-msg">Format non supporté. Utilisez des fichiers STL, OBJ ou 3MF.</span>
             </div>
 
-            <!-- File info card (shown after file selection) -->
+            <!-- File list card (shown after selection) -->
             <div class="file-info-card" id="file-info-card">
                 <div class="file-info-header">
                     <div class="file-info-icon">📄</div>
-                    <div>
-                        <div style="font-size:.88rem;font-weight:700;color:var(--text)" id="file-name-display">—</div>
-                        <div style="font-size:.72rem;color:var(--text-muted);margin-top:2px">Fichier sélectionné</div>
-                    </div>
-                    <div class="file-info-check">
-                        <span class="dot"></span> Prêt
-                    </div>
+                    <div style="font-size:.88rem;font-weight:700;color:var(--text)" id="file-count">—</div>
                 </div>
-
-                <div class="file-info-row">
-                    <span class="file-info-label">Nom du fichier</span>
-                    <span class="file-info-value" id="info-name">—</span>
-                </div>
-                <div class="file-info-row">
-                    <span class="file-info-label">Taille</span>
-                    <span class="file-info-value" id="info-size">—</span>
-                </div>
-                <div class="file-info-row">
-                    <span class="file-info-label">Format</span>
-                    <span class="file-info-value type-tag" id="info-type">—</span>
-                </div>
+                <ul class="file-list" id="file-list"></ul>
+                <div class="quota-bar" id="quota-bar"><span id="quota-fill"></span></div>
+                <div class="quota-text" id="quota-text">—</div>
             </div>
+
 
             <!-- Action buttons -->
             <div class="actions-row" id="actions-row">
-                <button class="btn-change" id="btn-change" type="button">🔄 Changer</button>
+                <button class="btn-change" id="btn-change" type="button">➕ Ajouter des fichiers</button>
                 <button class="btn-continue" id="btn-continue" type="button">Continuer →</button>
             </div>
 
@@ -594,6 +594,16 @@
             <h2>Précisez votre impression</h2>
             <p class="details-intro">Ces informations aideront l’équipe à préparer votre devis.</p>
             <div class="details-grid">
+                <label class="details-field full-width" for="name">Nom complet
+                    <input id="name" name="name" type="text" autocomplete="name" required>
+                </label>
+                <label class="details-field" for="phone">Téléphone
+                    <input id="phone" name="phone" type="tel" autocomplete="tel" required>
+                </label>
+                <label class="details-field" for="email">Adresse e-mail
+                    <input id="email" name="email" type="email" autocomplete="email" required>
+                </label>
+                <div class="hp" aria-hidden="true"><input id="website" name="website" type="text" tabindex="-1" autocomplete="off"></div>
                 <label class="details-field" for="material">
                     Matériau souhaité
                     <select id="material" name="material">
@@ -618,9 +628,10 @@
                     <textarea id="print-notes" name="print-notes" placeholder="Indiquez les dimensions souhaitées ou toute précision utile."></textarea>
                 </label>
             </div>
-            <p class="details-note">Le fichier et ces préférences restent dans votre navigateur : cette page ne transmet pas encore de demande en ligne.</p>
+            <p class="details-note" id="send-status" role="status">Vos fichiers et ces informations sont envoyés à MadaRC3D quand vous cliquez sur « Envoyer la demande ».</p>
             <div class="details-actions">
-                <button class="btn-change" id="btn-back-to-file" type="button">← Retour au fichier</button>
+                <button class="btn-change" id="btn-back-to-file" type="button">← Retour aux fichiers</button>
+                <button class="btn-continue" id="btn-send" type="button">Envoyer la demande</button>
             </div>
         </div>
     </div>
@@ -638,157 +649,136 @@
 
 <!-- ===== SCRIPTS ===== -->
 <script>
-    // ---- Elements ----
-    const dropZone      = document.getElementById('drop-zone');
-    const browseBtn     = document.getElementById('browse-btn');
-    const fileInput     = document.getElementById('file-input');
-    const errorToast    = document.getElementById('error-toast');
-    const errorMsg      = document.getElementById('error-msg');
-    const fileInfoCard  = document.getElementById('file-info-card');
-    const actionsRow    = document.getElementById('actions-row');
-    const infoName      = document.getElementById('info-name');
-    const infoSize      = document.getElementById('info-size');
-    const infoType      = document.getElementById('info-type');
-    const fileNameDisp  = document.getElementById('file-name-display');
-    const btnChange     = document.getElementById('btn-change');
-    const btnContinue   = document.getElementById('btn-continue');
-    const btnBackToFile = document.getElementById('btn-back-to-file');
-    const uploadSection = document.querySelector('.upload-section');
-    const detailsSection = document.getElementById('details-section');
-    const stepIndicator = document.getElementById('step-indicator');
-    const pageTitle = document.getElementById('page-title');
-    const pageSubtitle = document.getElementById('page-subtitle');
+    const MAX_TOTAL = 100 * 1024 * 1024, MAX_FILES = 10, ALLOWED = ['.stl', '.obj', '.3mf'];
+    const $ = id => document.getElementById(id);
+    const dropZone = $('drop-zone'), browseBtn = $('browse-btn'), fileInput = $('file-input');
+    const errorToast = $('error-toast'), errorMsg = $('error-msg');
+    const fileInfoCard = $('file-info-card'), actionsRow = $('actions-row'), fileList = $('file-list');
+    const quotaText = $('quota-text'), quotaFill = $('quota-fill');
+    const btnAdd = $('btn-change'), btnContinue = $('btn-continue'), btnBackToFile = $('btn-back-to-file');
+    const btnSend = $('btn-send'), sendStatus = $('send-status');
+    const uploadSection = document.querySelector('.upload-section'), detailsSection = $('details-section');
+    const stepIndicator = $('step-indicator'), pageTitle = $('page-title'), pageSubtitle = $('page-subtitle');
+    let files = [];
+
+    const totalSize = () => files.reduce((s, f) => s + f.size, 0);
+    const getExtension = n => { const d = n.lastIndexOf('.'); return d === -1 ? '' : n.slice(d).toLowerCase(); };
+    function formatSize(b) {
+        if (b < 1024) return b + ' octets';
+        if (b < 1024 * 1024) return (b / 1024).toFixed(1) + ' Ko';
+        return (b / (1024 * 1024)).toFixed(2) + ' Mo';
+    }
+    function showError(msg) { errorMsg.textContent = msg; errorToast.classList.add('visible'); }
+    function setStatus(msg, isError) { sendStatus.textContent = msg; sendStatus.classList.toggle('details-status-error', !!isError); }
+
+    function render() {
+        fileList.innerHTML = '';
+        files.forEach((f, i) => {
+            const li = document.createElement('li');
+            const n = document.createElement('span'); n.className = 'fname'; n.textContent = f.name;
+            const s = document.createElement('span'); s.className = 'fsize'; s.textContent = formatSize(f.size);
+            const b = document.createElement('button'); b.type = 'button'; b.className = 'fremove';
+            b.dataset.i = i; b.setAttribute('aria-label', 'Retirer ' + f.name); b.textContent = '✕';
+            li.append(n, s, b); fileList.append(li);
+        });
+        $('file-count').textContent = files.length + (files.length > 1 ? ' fichiers sélectionnés' : ' fichier sélectionné');
+        quotaText.textContent = formatSize(totalSize()) + ' sur 100 Mo';
+        quotaFill.style.width = Math.min(100, totalSize() / MAX_TOTAL * 100) + '%';
+        fileInfoCard.classList.toggle('visible', files.length > 0);
+        actionsRow.classList.toggle('visible', files.length > 0);
+    }
+
+    function addFiles(list) {
+        errorToast.classList.remove('visible');
+        for (const f of list) {
+            if (!ALLOWED.includes(getExtension(f.name))) { showError('Format non supporté : ' + f.name + '. Utilisez des fichiers STL, OBJ ou 3MF.'); continue; }
+            if (files.some(x => x.name === f.name && x.size === f.size)) continue;
+            if (files.length >= MAX_FILES) { showError('Maximum ' + MAX_FILES + ' fichiers par demande.'); break; }
+            if (totalSize() + f.size > MAX_TOTAL) { showError(f.name + ' dépasse la limite de 100 Mo au total par demande. Retirez un fichier ou contactez-nous.'); continue; }
+            files.push(f);
+        }
+        render();
+    }
 
     function showUploadStep() {
-        detailsSection.hidden = true;
-        uploadSection.hidden = false;
+        detailsSection.hidden = true; uploadSection.hidden = false;
         stepIndicator.textContent = 'Étape 1 / 4';
-        pageTitle.innerHTML = 'Déposer votre <span class="brand">modèle 3D</span>';
-        pageSubtitle.textContent = 'Sélectionnez votre fichier STL, OBJ ou 3MF depuis votre appareil.';
+        pageTitle.innerHTML = 'Déposer vos <span class="brand">modèles 3D</span>';
+        pageSubtitle.textContent = 'Sélectionnez vos fichiers STL, OBJ ou 3MF depuis votre appareil.';
         window.scrollTo({ top: 0, behavior: 'smooth' });
     }
-
     function showDetailsStep() {
-        uploadSection.hidden = true;
-        detailsSection.hidden = false;
+        uploadSection.hidden = true; detailsSection.hidden = false;
         stepIndicator.textContent = 'Étape 2 / 4';
         pageTitle.textContent = 'Précisez votre impression';
-        pageSubtitle.textContent = 'Choisissez vos préférences pour préparer le devis.';
+        pageSubtitle.textContent = 'Indiquez vos coordonnées et vos préférences pour préparer le devis.';
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+    function showDone() {
+        stepIndicator.textContent = 'Demande envoyée';
+        pageTitle.textContent = 'Merci, nous avons reçu vos fichiers';
+        pageSubtitle.textContent = 'Nous vous répondrons avec votre devis par e-mail ou par téléphone.';
+        document.querySelector('.details-card').innerHTML =
+            '<h2>Demande envoyée</h2><p class="details-intro">Un récapitulatif a été transmis à l’équipe MadaRC3D.</p>' +
+            '<div class="details-actions"><a class="btn-continue" href="index.html" style="text-decoration:none">Retour à l’accueil</a></div>';
         window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
-    // ---- Allowed extensions ----
-    const ALLOWED = ['.stl', '.obj', '.3mf'];
-
-    function getExtension(name) {
-        const dot = name.lastIndexOf('.');
-        return dot === -1 ? '' : name.slice(dot).toLowerCase();
-    }
-
-    function formatSize(bytes) {
-        if (bytes < 1024) return bytes + ' octets';
-        if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' Ko';
-        return (bytes / (1024 * 1024)).toFixed(2) + ' Mo';
-    }
-
-    function formatType(ext) {
-        const map = { '.stl': 'STL', '.obj': 'OBJ', '.3mf': '3MF' };
-        return map[ext] || ext.toUpperCase().replace('.', '');
-    }
-
-    // ---- Handle file ----
-    function handleFile(file) {
-        // Validate
-        const ext = getExtension(file.name);
-        if (!ALLOWED.includes(ext)) {
-            errorMsg.textContent = 'Format non supporté. Veuillez sélectionner un fichier STL, OBJ ou 3MF.';
-            errorToast.classList.add('visible');
-            fileInfoCard.classList.remove('visible');
-            actionsRow.classList.remove('visible');
-            return;
-        }
-
-        // Hide error, show info
-        errorToast.classList.remove('visible');
-
-        infoName.textContent     = file.name;
-        infoSize.textContent     = formatSize(file.size);
-        infoType.textContent     = formatType(ext);
-        fileNameDisp.textContent = file.name;
-
-        fileInfoCard.classList.add('visible');
-        actionsRow.classList.add('visible');
-    }
-
-    // ---- Browse button ----
-    browseBtn.addEventListener('click', (e) => {
-        e.stopPropagation();
-        fileInput.click();
+    browseBtn.addEventListener('click', e => { e.stopPropagation(); fileInput.click(); });
+    dropZone.addEventListener('click', () => fileInput.click());
+    btnAdd.addEventListener('click', () => fileInput.click());
+    fileInput.addEventListener('change', () => { addFiles(fileInput.files); fileInput.value = ''; });
+    fileList.addEventListener('click', e => {
+        const b = e.target.closest('.fremove'); if (!b) return;
+        files.splice(+b.dataset.i, 1); errorToast.classList.remove('visible'); render();
     });
-
-    // ---- Drop zone click (except button) ----
-    dropZone.addEventListener('click', () => {
-        fileInput.click();
-    });
-
-    // ---- File input change ----
-    fileInput.addEventListener('change', () => {
-        if (fileInput.files.length > 0) {
-            handleFile(fileInput.files[0]);
-        }
-    });
-
-    // ---- Drag & drop ----
-    ['dragenter', 'dragover'].forEach(evt => {
-        dropZone.addEventListener(evt, (e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            dropZone.classList.add('dragover');
-        });
-    });
-    ['dragleave', 'drop'].forEach(evt => {
-        dropZone.addEventListener(evt, (e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            dropZone.classList.remove('dragover');
-        });
-    });
-    dropZone.addEventListener('drop', (e) => {
-        const files = e.dataTransfer.files;
-        if (files.length > 0) {
-            handleFile(files[0]);
-        }
-    });
-
-    // ---- Change file button ----
-    btnChange.addEventListener('click', () => {
-        fileInput.value = '';
-        fileInfoCard.classList.remove('visible');
-        actionsRow.classList.remove('visible');
-        errorToast.classList.remove('visible');
-        fileInput.click();
-    });
-
-    // ---- Continue button ----
-    btnContinue.addEventListener('click', () => {
-        if (fileInput.files.length > 0) {
-            showDetailsStep();
-        }
-    });
-
+    ['dragenter', 'dragover'].forEach(evt => dropZone.addEventListener(evt, e => { e.preventDefault(); e.stopPropagation(); dropZone.classList.add('dragover'); }));
+    ['dragleave', 'drop'].forEach(evt => dropZone.addEventListener(evt, e => { e.preventDefault(); e.stopPropagation(); dropZone.classList.remove('dragover'); }));
+    dropZone.addEventListener('drop', e => addFiles(e.dataTransfer.files));
+    btnContinue.addEventListener('click', () => { if (files.length) showDetailsStep(); });
     btnBackToFile.addEventListener('click', showUploadStep);
 
-    // ---- Scroll reveal ----
-    const reveals = document.querySelectorAll('.reveal');
-    const observer = new IntersectionObserver((entries) => {
-        entries.forEach(e => {
-            if (e.isIntersecting) {
-                e.target.classList.add('visible');
-                observer.unobserve(e.target);
+    // ---- Envoi : fichiers vers Vercel Blob, puis e-mail ----
+    btnSend.addEventListener('click', async () => {
+        const v = id => $(id).value.trim();
+        if (!v('name') || !v('phone') || !/^\S+@\S+\.\S+$/.test(v('email'))) {
+            setStatus('Renseignez votre nom, votre téléphone et une adresse e-mail valide.', true); return;
+        }
+        if (!files.length || totalSize() > MAX_TOTAL) return;
+        btnSend.disabled = true;
+        try {
+            const { upload } = await import('https://esm.sh/@vercel/blob@1/client');
+            const uploaded = [];
+            for (let i = 0; i < files.length; i++) {
+                const f = files[i], label = 'Envoi du fichier ' + (i + 1) + '/' + files.length;
+                setStatus(label + '…');
+                const safe = f.name.toLowerCase().replace(/[^a-z0-9._-]+/g, '-');
+                const blob = await upload('demandes/' + safe, f, {
+                    access: 'public', handleUploadUrl: '/api/blob-upload', multipart: f.size > 8 * 1024 * 1024,
+                    onUploadProgress: ({ percentage }) => setStatus(label + ' : ' + Math.round(percentage) + ' %')
+                });
+                uploaded.push({ name: f.name, url: blob.url });
             }
-        });
-    }, { threshold: 0.15 });
-    reveals.forEach(el => observer.observe(el));
+            setStatus('Envoi de la demande…');
+            const r = await fetch('/api/envoyer-demande', {
+                method: 'POST', headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name: v('name'), phone: v('phone'), email: v('email'), material: $('material').value,
+                    quantity: v('quantity'), color: v('color'), notes: v('print-notes'), website: v('website'), files: uploaded })
+            });
+            const data = await r.json().catch(() => ({}));
+            if (!r.ok) throw new Error(data.error || 'Erreur pendant l’envoi.');
+            showDone();
+        } catch (err) {
+            setStatus((err.message || 'Erreur pendant l’envoi.') + ' Réessayez ou contactez-nous.', true);
+            btnSend.disabled = false;
+        }
+    });
+
+    // ---- Scroll reveal ----
+    const observer = new IntersectionObserver(entries => entries.forEach(e => {
+        if (e.isIntersecting) { e.target.classList.add('visible'); observer.unobserve(e.target); }
+    }), { threshold: 0.15 });
+    document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
 </script>
 
 </body>
