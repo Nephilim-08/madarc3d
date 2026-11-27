@@ -22,7 +22,7 @@ export default async function handler(req, res) {
   try {
     for (const f of input) {
       const u = new URL(f.url);
-      if (!u.hostname.endsWith('.public.blob.vercel-storage.com') || !u.pathname.startsWith('/demandes/')) throw new Error('bad');
+      if (   !u.hostname.endsWith('.private.blob.vercel-storage.com') ||   !u.pathname.startsWith('/demandes/') ) {   throw new Error('bad'); }
       const info = await head(f.url);
       total += info.size;
       files.push({ name: String(f.name || info.pathname).slice(0, 200), url: info.url, downloadUrl: info.downloadUrl, size: info.size });
